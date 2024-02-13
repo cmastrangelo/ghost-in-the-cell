@@ -36,8 +36,46 @@ class Visualizer:
             )
             ax.scatter(x, y, c=color, s=100, edgecolors="black")
             ax.text(
-                x, y, f"{i}\n{factory.cyborgs}", color="white", ha="center", va="center"
+                x, y, f"{i}\n{factory.cyborgs}", color="black", ha="center", va="center"
             )
+
+        # Plot troops
+        for troop in self.game.troops:
+            x_source, y_source = positions[troop.source_factory]
+            x_destination, y_destination = positions[troop.destination_factory]
+            total_travel_time = self.game.distances.get(
+                (troop.source_factory, troop.destination_factory), 20
+            )
+            progress = (total_travel_time - troop.travel_time) / total_travel_time
+            x_troop = x_source + (x_destination - x_source) * progress
+            y_troop = y_source + (y_destination - y_source) * progress
+            color = "blue" if troop.owner == 1 else "red"
+            ax.scatter(
+                x_troop, y_troop, c=color, s=50, edgecolors="black", marker="^"
+            )  # Plot troop as a triangle
+            ax.text(
+                x_troop,
+                y_troop,
+                f"{troop.num_cyborgs}",
+                color="black",
+                ha="center",
+                va="center",
+            )
+
+        # Plot bombs
+        for bomb in self.game.bombs:
+            x_source, y_source = positions[bomb.source_factory]
+            x_destination, y_destination = positions[bomb.destination_factory]
+            total_travel_time = self.game.distances.get(
+                (bomb.source_factory, bomb.destination_factory), 20
+            )
+            progress = (total_travel_time - bomb.travel_time) / total_travel_time
+            x_bomb = x_source + (x_destination - x_source) * progress
+            y_bomb = y_source + (y_destination - y_source) * progress
+            color = "blue" if bomb.owner == 1 else "red"
+            ax.scatter(
+                x_bomb, y_bomb, c=color, s=50, edgecolors="black", marker="*"
+            )  # Plot bomb as a star
 
         ax.axis("equal")  # Set equal scaling by changing axis limits
         plt.title("Game State Visualization")
@@ -70,6 +108,7 @@ class Factory:
         self.cyborgs = cyborgs
         # Production rate is now variable between 0 and 3 for non-neutral factories
         self.production = random.randint(0, 3) if owner != 0 else 0
+        self.production_disabled = False
 
 
 class Troop:
@@ -226,7 +265,10 @@ class Game:
 game = Game(10, 7)
 # Assuming `game` is your game instance
 visualizer = Visualizer(game)
-visualizer.visualize()
-exit()
 game.send_troop(1, 5, 0, 2)  # Example command to send troops
 game.update()  # Simulate a turn
+game.send_bomb(1, 0, 6)
+game.update()  # Simulate a turn
+game.update()  # Simulate a turn
+visualizer.visualize()
+exit()
