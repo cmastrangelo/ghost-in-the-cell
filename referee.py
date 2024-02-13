@@ -17,20 +17,30 @@ class Visualizer:
         for (f1, f2), distance in self.game.distances.items():
             x1, y1 = positions[f1]
             x2, y2 = positions[f2]
-            ax.plot([x1, x2], [y1, y2], 'k-', lw=1, alpha=0.6)  # Draw links
+            ax.plot([x1, x2], [y1, y2], "k-", lw=1, alpha=0.6)  # Draw links
             # Optionally, annotate the distance
             mid_x, mid_y = (x1 + x2) / 2, (y1 + y2) / 2
-            ax.text(mid_x, mid_y, str(distance), color='purple', fontsize=8, ha='center')
+            ax.text(
+                mid_x, mid_y, str(distance), color="purple", fontsize=8, ha="center"
+            )
 
         # Plot factories
         for i, factory in enumerate(self.game.factories):
             x, y = positions[i]
-            color = 'grey' if factory.owner == 0 else 'blue' if factory.owner == 1 else 'red'
-            ax.scatter(x, y, c=color, s=100, edgecolors='black')
-            ax.text(x, y, f"{i}\n{factory.cyborgs}", color='white', ha='center', va='center')
+            color = (
+                "grey"
+                if factory.owner == 0
+                else "blue"
+                if factory.owner == 1
+                else "red"
+            )
+            ax.scatter(x, y, c=color, s=100, edgecolors="black")
+            ax.text(
+                x, y, f"{i}\n{factory.cyborgs}", color="white", ha="center", va="center"
+            )
 
-        ax.axis('equal')  # Set equal scaling by changing axis limits
-        plt.title('Game State Visualization')
+        ax.axis("equal")  # Set equal scaling by changing axis limits
+        plt.title("Game State Visualization")
         plt.show()
 
     def generate_positions(self):
@@ -63,7 +73,9 @@ class Factory:
 
 
 class Troop:
-    def __init__(self, owner, num_cyborgs, source_factory, destination_factory, travel_time):
+    def __init__(
+        self, owner, num_cyborgs, source_factory, destination_factory, travel_time
+    ):
         self.owner = owner
         self.num_cyborgs = num_cyborgs
         self.source_factory = source_factory
@@ -82,7 +94,9 @@ class Game:
 
     def initialize_factories(self, factory_count):
         for _ in range(factory_count):
-            self.factories.append(Factory(0, random.randint(15, 30)))  # Neutral factories
+            self.factories.append(
+                Factory(0, random.randint(15, 30))
+            )  # Neutral factories
         # Assign initial factories to players
         self.factories[0].owner, self.factories[0].production = 1, random.randint(0, 3)
         self.factories[1].owner, self.factories[1].production = 2, random.randint(0, 3)
@@ -90,7 +104,7 @@ class Game:
     def initialize_distances(self, factory_count, link_count):
         # Simulate links and distances based on the provided constraints
         links = set()
-        while len(links) < link_count:
+        while len(links) < 2 * link_count:
             f1, f2 = random.sample(range(factory_count), 2)
             if (f1, f2) not in links and (f2, f1) not in links:
                 distance = random.randint(1, 20)
@@ -102,7 +116,9 @@ class Game:
         if self.factories[source_factory].owner != owner:
             raise ValueError("You do not own the source factory.")
         travel_time = self.distances.get((source_factory, destination_factory), 20)
-        self.troops.append(Troop(owner, num_cyborgs, source_factory, destination_factory, travel_time))
+        self.troops.append(
+            Troop(owner, num_cyborgs, source_factory, destination_factory, travel_time)
+        )
         self.factories[source_factory].cyborgs -= num_cyborgs
 
     def send_bomb(self, owner, source_factory, destination_factory):
@@ -120,10 +136,14 @@ class Game:
 
         # Produce new cyborgs in all factories
         for factory in self.factories:
-            if factory.owner != 0 and factory.production_disabled == 0:  # Neutral factories do not produce
+            if (
+                factory.owner != 0 and factory.production_disabled == 0
+            ):  # Neutral factories do not produce
                 factory.cyborgs += factory.production
             elif factory.production_disabled > 0:
-                factory.production_disabled -= 1  # Decrease the production disabled counter
+                factory.production_disabled -= (
+                    1  # Decrease the production disabled counter
+                )
 
     def update_troops(self):
         battles = {}  # Dictionary to organize battles by destination factory
@@ -165,7 +185,9 @@ class Game:
         # Determine the outcome of battles between different arriving troops
         if len(combatants) > 1:
             # Sort combatants by the number of cyborgs descending
-            sorted_combatants = sorted(combatants.items(), key=lambda x: x[1], reverse=True)
+            sorted_combatants = sorted(
+                combatants.items(), key=lambda x: x[1], reverse=True
+            )
             winner, winner_cyborgs = sorted_combatants[0]
             for loser, loser_cyborgs in sorted_combatants[1:]:
                 winner_cyborgs -= loser_cyborgs  # Battle resolution
@@ -184,7 +206,9 @@ class Game:
                 new_owner = max(combatants, key=combatants.get)
                 factory.owner = new_owner
                 factory.cyborgs = attacking_force - factory.cyborgs
-                factory.production = random.randint(0, 3)  # Set new production rate for the conquering player
+                factory.production = random.randint(
+                    0, 3
+                )  # Set new production rate for the conquering player
             else:
                 factory.cyborgs -= attacking_force  # Defenders repel the attack
 
